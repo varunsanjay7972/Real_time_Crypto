@@ -6,7 +6,7 @@ import pandas as pd
 
 app = FastAPI()
 
-# Allow frontend to connect
+# Allow frontend to connect (CORS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,13 +26,13 @@ def home():
     return {"message": "Crypto Prediction API is running!"}
 
 def fetch_latest_price():
-    url = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'
+    url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'
     try:
         response = requests.get(url, timeout=5).json()
-        if 'price' in response:
-            return float(response['price'])
+        if 'bitcoin' in response and 'usd' in response['bitcoin']:
+            return float(response['bitcoin']['usd'])
         else:
-            print("Error fetching price, response:", response)
+            print("Error fetching price from CoinGecko:", response)
             return 0.0  # fallback price
     except Exception as e:
         print("Exception during price fetch:", e)

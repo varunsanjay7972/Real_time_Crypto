@@ -6,7 +6,7 @@ def fetch_crypto_price():
     prices = []
     url = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'
 
-    for _ in range(10):  # fetching 10 samples for testing
+    for _ in range(10):  # fetching 10 samples
         try:
             response = requests.get(url, timeout=5).json()
             if 'price' in response:
@@ -17,7 +17,7 @@ def fetch_crypto_price():
                 print("Error: Unexpected response from Binance:", response)
         except Exception as e:
             print("Error fetching data:", e)
-        time.sleep(5)  # wait 5 seconds
+        time.sleep(5)  # 5 seconds delay between fetches
 
     if prices:
         pd.DataFrame(prices).to_csv("data/bitcoin_prices.csv", index=False)
@@ -25,6 +25,6 @@ def fetch_crypto_price():
     else:
         print("No prices fetched. CSV not saved.")
 
-# Only call it when running locally
+# Run only when running manually
 if __name__ == "__main__":
     fetch_crypto_price()
