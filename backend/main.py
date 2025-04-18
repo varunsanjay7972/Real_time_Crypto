@@ -3,21 +3,22 @@ from fastapi.middleware.cors import CORSMiddleware
 import joblib
 import requests
 import pandas as pd
-import numpy as np
 
 app = FastAPI()
 
-# Add CORS Middleware (VERY IMPORTANT for frontend connection)
+# Allow frontend to connect
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_methods=["*"],
 )
 
+# Load trained models
 models = {
-    name: joblib.load(f'models/{name}.pkl') 
+    name: joblib.load(f'models/{name}.pkl')
     for name in ["LinearRegression", "DecisionTree", "RandomForest", "GradientBoosting", "XGBoost", "SVR"]
 }
 
@@ -27,8 +28,16 @@ def home():
 
 def fetch_latest_price():
     url = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'
-    response = requests.get(url).json()
-    return float(response['price'])
+    try:
+        response = requests.get(url, timeout=5).json()
+        if 'price' in response:
+            return float(response['price'])
+        else:
+            print("Error fetching price, response:", response)
+            return 0.0  # fallback price
+    except Exception as e:
+        print("Exception during price fetch:", e)
+        return 0.0  # fallback price
 
 @app.get("/predict/")
 def predict():
@@ -36,7 +45,6 @@ def predict():
     data = [latest_price]*5
     df = pd.DataFrame([data], columns=[f'lag_{i}' for i in range(1,6)])
 
-    # Explicitly convert predictions to Python float
     predictions = {name: float(model.predict(df)[0]) for name, model in models.items()}
 
     return {

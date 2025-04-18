@@ -8,15 +8,23 @@ def fetch_crypto_price():
 
     for _ in range(10):  # fetching 10 samples for testing
         try:
-            response = requests.get(url).json()
-            price = float(response['price'])
-            print(f"Fetched price: {price}")
-            prices.append({'timestamp': pd.Timestamp.now(), 'price': price})
+            response = requests.get(url, timeout=5).json()
+            if 'price' in response:
+                price = float(response['price'])
+                print(f"Fetched price: {price}")
+                prices.append({'timestamp': pd.Timestamp.now(), 'price': price})
+            else:
+                print("Error: Unexpected response from Binance:", response)
         except Exception as e:
             print("Error fetching data:", e)
         time.sleep(5)  # wait 5 seconds
 
-    pd.DataFrame(prices).to_csv("data/bitcoin_prices.csv", index=False)
-    print("Data fetching completed and saved as bitcoin_prices.csv")
+    if prices:
+        pd.DataFrame(prices).to_csv("data/bitcoin_prices.csv", index=False)
+        print("Data fetching completed and saved as bitcoin_prices.csv")
+    else:
+        print("No prices fetched. CSV not saved.")
 
-fetch_crypto_price()
+# Only call it when running locally
+if __name__ == "__main__":
+    fetch_crypto_price()
