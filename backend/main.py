@@ -26,17 +26,17 @@ def home():
     return {"message": "Crypto Prediction API is running!"}
 
 def fetch_latest_price():
-    url = 'https://api.coincap.io/v2/assets/bitcoin'
+    url = 'https://api.bitfinex.com/v1/pubticker/btcusd'
     try:
         response = requests.get(url, timeout=5).json()
-        if 'data' in response and 'priceUsd' in response['data']:
-            return float(response['data']['priceUsd'])
+        if 'last_price' in response:
+            return float(response['last_price'])
         else:
-            print("Error fetching price from CoinCap:", response)
-            return 0.0
+            print("Error fetching price from Bitfinex:", response)
+            return 0.0  # fallback price
     except Exception as e:
         print("Exception during price fetch:", e)
-        return 0.0
+        return 0.0  # fallback price
 
 @app.get("/predict/")
 def predict():
