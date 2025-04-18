@@ -25,6 +25,5 @@ def fetch_crypto_price():
     else:
         print("No prices fetched. CSV not saved.")
 
-# Run only when running manually
 if __name__ == "__main__":
     fetch_crypto_price()

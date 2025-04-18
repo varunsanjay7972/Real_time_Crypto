@@ -6,7 +6,7 @@ import pandas as pd
 
 app = FastAPI()
 
-# Allow frontend to connect (CORS)
+# Allow frontend to connect
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load trained models
+# Load trained ML models
 models = {
     name: joblib.load(f'models/{name}.pkl')
     for name in ["LinearRegression", "DecisionTree", "RandomForest", "GradientBoosting", "XGBoost", "SVR"]
@@ -26,23 +26,23 @@ def home():
     return {"message": "Crypto Prediction API is running!"}
 
 def fetch_latest_price():
-    url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'
+    url = 'https://api.coincap.io/v2/assets/bitcoin'
     try:
         response = requests.get(url, timeout=5).json()
-        if 'bitcoin' in response and 'usd' in response['bitcoin']:
-            return float(response['bitcoin']['usd'])
+        if 'data' in response and 'priceUsd' in response['data']:
+            return float(response['data']['priceUsd'])
         else:
-            print("Error fetching price from CoinGecko:", response)
-            return 0.0  # fallback price
+            print("Error fetching price from CoinCap:", response)
+            return 0.0
     except Exception as e:
         print("Exception during price fetch:", e)
-        return 0.0  # fallback price
+        return 0.0
 
 @app.get("/predict/")
 def predict():
     latest_price = fetch_latest_price()
-    data = [latest_price]*5
-    df = pd.DataFrame([data], columns=[f'lag_{i}' for i in range(1,6)])
+    data = [latest_price] * 5
+    df = pd.DataFrame([data], columns=[f'lag_{i}' for i in range(1, 6)])
 
     predictions = {name: float(model.predict(df)[0]) for name, model in models.items()}
 
