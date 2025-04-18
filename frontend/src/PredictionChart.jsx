@@ -25,24 +25,32 @@ export default function PredictionChart() {
         setLastUpdated(new Date().toLocaleTimeString());
 
         if (!selectedModel && predictionArray.length > 0) {
-          setSelectedModel(predictionArray[0]); // Set default selected model
+          setSelectedModel(predictionArray[0]);
         }
       } catch (error) {
         console.error("Error fetching predictions:", error);
       }
     };
 
-    fetchData(); // Fetch immediately
+    fetchData();
 
-    const interval = setInterval(fetchData, 5000); // Auto-refresh every 5 sec
+    const interval = setInterval(fetchData, 5000);
 
-    return () => clearInterval(interval); // Cleanup
+    return () => clearInterval(interval);
   }, []);
 
   const handleSelectChange = (e) => {
     const selected = data.find(item => item.model === e.target.value);
     setSelectedModel(selected);
   };
+
+  // Calculate dynamic Y-axis range
+  const yDomain = latestPrice
+    ? [
+        latestPrice * 0.98,  // 2% below
+        latestPrice * 1.02   // 2% above
+      ]
+    : ["auto", "auto"];
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen flex flex-col items-center">
@@ -87,11 +95,24 @@ export default function PredictionChart() {
           <LineChart width={800} height={400} data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="model" />
-            <YAxis />
+            <YAxis domain={yDomain} />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="predicted_price" stroke="#8884d8" name="Predicted Price" />
-            <Line type="monotone" dataKey="latest_price" stroke="#82ca9d" name="Latest Market Price" />
+            <Line 
+              type="monotone" 
+              dataKey="predicted_price" 
+              stroke="#4F46E5" 
+              name="Predicted Price" 
+              strokeWidth={3}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="latest_price" 
+              stroke="#10B981" 
+              name="Latest Market Price" 
+              strokeDasharray="5 5" 
+              strokeWidth={2}
+            />
           </LineChart>
         </div>
       </div>
